@@ -1,0 +1,38 @@
+// Wait for the page to load fully
+window.onload = () => {
+    const connectButton = document.getElementById("connectButton");
+    const userAddressElement = document.getElementById("userAddress");
+    const userBalanceElement = document.getElementById("userBalance");
+
+    // Check if the browser supports Ethereum (MetaMask, for example)
+    if (typeof window.ethereum !== "undefined") {
+        console.log("Ethereum browser detected!");
+
+        const provider = new ethers.BrowserProvider(window.ethereum);  // Use the browser's Ethereum provider
+        let signer, userAddress;
+
+        // Connect to the wallet when button is clicked
+        connectButton.onclick = async () => {
+            try {
+                // Request account access
+                const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+
+                // Create a signer and get user address
+                signer = provider.getSigner();
+                userAddress = await signer.getAddress();
+                userAddressElement.innerText = `Connected Address: ${userAddress}`;
+
+                // Fetch balance
+                const balanceInWei = await provider.getBalance(userAddress);
+                const balanceInEth = ethers.formatEther(balanceInWei);
+                userBalanceElement.innerText = `Balance: ${balanceInEth} ETH`;
+
+                connectButton.disabled = true; // Disable the button after connection
+            } catch (error) {
+                console.error("Error connecting to wallet:", error);
+            }
+        };
+    } else {
+        alert("Ethereum browser extension (like MetaMask) is required!");
+    }
+};
